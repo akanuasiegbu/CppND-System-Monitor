@@ -35,12 +35,15 @@ vector<Process>& System::Processes() {
         pids.pop_back();
 
         // Create Process
-        Process p1;
-        p1.Pid(pid);
+        Process p1 {pid};
+        // p1.Pid(pid);
 
         //Adds the process 
         processes_.push_back(p1);
     }
+
+    std::sort(processes_.begin(), processes_.end()); // uses Process::operator<
+
     return processes_; 
     
     }
@@ -88,4 +91,5 @@ int System::TotalProcesses() {
 long int System::UpTime() { 
     long int time{LinuxParser::UpTime()};
     
-    return time; }
+    return time; 
+}
