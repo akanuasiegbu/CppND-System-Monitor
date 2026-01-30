@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <assert.h>
+// #include <linux/jiffies.h>
 
 #include "linux_parser.h"
 // int LinuxParser::total_proc = 0;
@@ -122,20 +123,58 @@ long LinuxParser::UpTime() {
   }
 
 // TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
+long LinuxParser::Jiffies() { 
+
+  
+  // Total = Idle + Active
+  return ActiveJiffies() + IdleJiffies();
+}
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { return 0; }
+long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { 
+  return 0;
+  }
 
 // TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
+long LinuxParser::ActiveJiffies() { 
+  
+  std::vector<string> stat {CpuUtilization()};
+
+  // return user + nice + system + irq + softirq + steal;
+  return std::stol(stat[0]) + std::stol(stat[1]) + std::stol(stat[2]) + std::stol(stat[5]) +
+          std::stol(stat[6]) + std::stol(stat[7]) ; 
+}
 
 // TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
+long LinuxParser::IdleJiffies() { 
+  std::vector<string> stat {CpuUtilization()};
+
+  // return idle + iowait
+ return std::stol(stat[3]) + std::stol(stat[4]) ;
+}
 
 // TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { return {}; }
+vector<string> LinuxParser::CpuUtilization() {
+  std::ifstream proc_stat_info {kProcDirectory + kStatFilename};
+  std::vector<string> stat;
+  if (proc_stat_info){
+    std::string line;
+    std::getline(proc_stat_info, line);
+
+    std::istringstream sline(line);
+
+    std::string cpu;
+    sline>> cpu;
+
+    string stat_num;
+    while (sline>>stat_num){
+      stat.push_back(stat_num);
+    }
+  }
+  
+  return stat;
+}
 
 vector<int> LinuxParser::CpuUtilization(int pid) { 
   std::ifstream statinfo{kProcDirectory + std::to_string(pid) + kStatFilename};

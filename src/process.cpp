@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <assert.h>
 
 #include "process.h"
 #include "linux_parser.h"
@@ -25,6 +26,7 @@ Process::Process(int pid): pid_(pid), username_(LinuxParser::User(pid)){};
 // TODO: Return this process's CPU utilization
 float Process::CpuUtilization() { 
     std::vector<int> pid_cpu_util {LinuxParser::CpuUtilization(Pid())};
+    if (pid_cpu_util.size()< 3) return 0.0;
     
     // utime [0], stime[1], cutime[2], cstime[3], starttime [4]
 
