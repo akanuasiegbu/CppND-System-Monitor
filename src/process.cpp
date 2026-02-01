@@ -25,25 +25,45 @@ Process::Process(int pid): pid_(pid), username_(LinuxParser::User(pid)){};
 
 // TODO: Return this process's CPU utilization
 float Process::CpuUtilization() { 
-    std::vector<int> pid_cpu_util {LinuxParser::CpuUtilization(Pid())};
-    if (pid_cpu_util.size()< 3) return 0.0;
+
+
+    const float hertz = sysconf(_SC_CLK_TCK);
+    const float cpu_count = sysconf(_SC_NPROCESSORS_ONLN);
     
-    // utime [0], stime[1], cutime[2], cstime[3], starttime [4]
 
-    float hertz = sysconf(_SC_CLK_TCK);
-    //total_time = utime + stime +cutime + cstime
+    long total_jiff {LinuxParser::ActiveJiffies(Pid())};
+    float uptime = static_cast<float>(LinuxParser::UpTime());
+    long startime {0};
 
-    int total_time {0};
-    for (int i =0; i < 4; i++)
-    {
-        total_time +=  pid_cpu_util[i];
+    std::ifstream statinfo{LinuxParser::kProcDirectory + std::to_string(Pid()) + LinuxParser::kStatFilename};
+      if (statinfo){
+        std::string data;
+        std::string line;
+        std::getline(statinfo, line);
+
+        auto rparen = line.rfind(')');
+
+        std::istringstream sline(line.substr(rparen + 2));
+
+        int i = 3; 
+        while(sline >> data)
+        {
+            if (i==22){
+                startime = std::stof(data);
+            
+            }
+
+            i += 1;
+
+        } 
+
     }
 
-    float seconds  {static_cast<float>(LinuxParser::UpTime())- (static_cast<float>(pid_cpu_util[4])/hertz)};
+    float seconds = uptime - (startime/hertz);
 
-    float cpu_usage {   100.0f*(static_cast<float>(total_time)/hertz)/seconds };
-    
-    return cpu_usage;
+    if (seconds <= 0.0f) return 0.0f;
+
+    return (100.0f*(static_cast<float>(total_jiff)/hertz)/seconds)/cpu_count;
 }
 
 

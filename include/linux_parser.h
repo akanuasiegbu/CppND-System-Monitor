@@ -31,21 +31,20 @@ std::string Kernel(); // Done
 // extern int total_proc;
 // extern int run_proc;
 
-// CPU
-enum CPUStates {
-  kUser_ = 0,
-  kNice_,
-  kSystem_,
-  kIdle_,
-  kIOwait_,
-  kIRQ_,
-  kSoftIRQ_,
-  kSteal_,
-  kGuest_,
-  kGuestNice_
-};
+// CPU- Didnt use, probably could have
+// enum CPUStates {
+//   kUser_ = 0,
+//   kNice_,
+//   kSystem_,
+//   kIdle_,
+//   kIOwait_,
+//   kIRQ_,
+//   kSoftIRQ_,
+//   kSteal_,
+//   kGuest_,
+//   kGuestNice_
+// };
 std::vector<std::string> CpuUtilization();
-std::vector<int> CpuUtilization(int pid);
 
 long Jiffies();
 long ActiveJiffies();

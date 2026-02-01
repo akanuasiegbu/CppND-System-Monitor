@@ -132,9 +132,36 @@ long LinuxParser::Jiffies() {
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { 
-  return 0;
+long LinuxParser::ActiveJiffies(int pid) { 
+  std::ifstream statinfo{kProcDirectory + std::to_string(pid) + kStatFilename};
+
+
+
+  long jiffies {0};
+
+  if (statinfo){
+    std::string data;
+    std::string line;
+    
+    std::getline(statinfo, line);
+    auto rparen = line.rfind(')');
+
+    std::istringstream sline(line.substr(rparen + 2));
+    
+    int i = 3; 
+    while(sline >> data)
+    {
+      if (i >=14 && i <= 17){
+        jiffies += std::stol(data);
+        // pid_cpu_util.push_back(std::stoi(data));
+      }
+
+      i += 1;
+
+    } 
   }
+  return jiffies;
+}
 
 // TODO: Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies() { 
@@ -176,33 +203,6 @@ vector<string> LinuxParser::CpuUtilization() {
   return stat;
 }
 
-vector<int> LinuxParser::CpuUtilization(int pid) { 
-  std::ifstream statinfo{kProcDirectory + std::to_string(pid) + kStatFilename};
-
-  std::vector<int> pid_cpu_util;
-
-  std::string data;
-  std::string line;
-
-  if (statinfo){
-    std::getline(statinfo, line);
-    std::istringstream sline(line);
-    
-    int i = 1; // 1 index
-    while(sline >> data)
-    {
-      if (i >=14 && i <= 17){
-        pid_cpu_util.push_back(std::stoi(data));
-      }
-      else if (i==22){
-        pid_cpu_util.push_back(std::stoi(data));
-      }
-      i += 1;
-
-    } 
-  }
-  return pid_cpu_util;
-}
 
 // TODO: Read and return the total number of processes
 int LinuxParser::TotalProcesses() { 
